@@ -115,6 +115,10 @@ class Config(object):
         self._validate()
 
     @property
+    def is_memcached(self):
+        return self.args.get('parallel', False)
+
+    @property
     def debug(self):
         return self.args.get('debug', MOLECULE_DEBUG)
 

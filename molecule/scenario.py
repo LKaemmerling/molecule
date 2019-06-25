@@ -38,11 +38,17 @@ class Scenario(object):
     fundamental change from Molecule v1.
 
     A scenario is a self-contained directory containing everything necessary
-    for testing the role in a particular way.  The default scenario is named
+    for testing the role in a particular way. The default scenario is named
     ``default``, and every role should contain a default scenario.
 
     Unless mentioned explicitly, the scenario name will be the directory name
     hosting the files.
+
+    If `--parallel` is passed on the command-line then the scenario will be
+    stored in memory and nothing will be serialized to disk. The Scenario_
+    object still offers the same API in this case but we raise a
+    MemCacheException_ when the programmer uses an incompatible API (like
+    ephemeral_directory) and does not handle the memcache case.
 
     Any option set in this section will override the defaults.
 
@@ -107,8 +113,14 @@ class Scenario(object):
         files declared as "safe_files" in the ``driver`` configuration
         declared in ``molecule.yml``.
 
+        This step is skipped if Molecule is being run with in-memory caching
+        (--parallel) configured.
+
         :return: None
         """
+        if self.is_memcached:
+            return
+
         LOG.info('Pruning extra files from scenario ephemeral directory')
         safe_files = [
             self.config.provisioner.config_file,
@@ -127,15 +139,25 @@ class Scenario(object):
                 os.removedirs(dirpath)
 
     @property
+    def is_memcached(self):
+        return self.config.is_memcached
+
+    @property
     def name(self):
         return self.config.config['scenario']['name']
 
     @property
     def directory(self):
+        if self.is_memcached:
+            raise util.MemCacheException('molecule.scenario.Scenario.directory')
+
         return os.path.dirname(self.config.molecule_file)
 
     @property
     def ephemeral_directory(self):
+        if self.is_memcached:
+            raise util.MemCacheException('molecule.scenario.Scenario.ephemeral_directory')
+
         project_directory = os.path.basename(self.config.project_directory)
         scenario_name = self.name
         project_scenario_directory = os.path.join(
@@ -146,6 +168,9 @@ class Scenario(object):
 
     @property
     def inventory_directory(self):
+        if self.is_memcached:
+            raise util.MemCacheException('molecule.scenario.Scenario.inventory_directory')
+
         return os.path.join(self.ephemeral_directory, "inventory")
 
     @property
@@ -225,6 +250,9 @@ class Scenario(object):
 
          :return: None
          """
+        if self.is_memcached:
+            return
+
         if not os.path.isdir(self.inventory_directory):
             os.makedirs(self.inventory_directory)
 

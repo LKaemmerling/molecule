@@ -71,6 +71,10 @@ class Test(base.Base):
 
         Load an env file to read variables from when rendering
         molecule.yml.
+
+    .. option:: molecule --parallel test
+
+        Run in parallel mode.
     """
 
     def execute(self):
@@ -106,7 +110,13 @@ class Test(base.Base):
     default='always',
     help=('The destroy strategy used at the conclusion of a '
           'Molecule run (always).'))
-def test(ctx, scenario_name, driver_name, __all, destroy):  # pragma: no cover
+@click.option(
+    '--parallel/--no-parallel',
+    '-p',
+    default=False,
+    help='Run in parallel mode. Default is False.')
+def test(ctx, scenario_name, driver_name, __all, destroy,
+         parallel):  # pragma: no cover
     """
     Test (lint, cleanup, destroy, dependency, syntax, create, prepare,
           converge, idempotence, side_effect, verify, cleanup, destroy).

@@ -311,3 +311,14 @@ def memoize(function):
         return memo[args]
 
     return wrapper
+
+
+class MemCacheException(Exception):
+    """Raised when memcache incompatible APIs are used at run time."""
+
+    def __init__(self, message):
+        _message = ((
+            'Cannot use {} while the execution mode is '
+            'configured to use in-memory caching (--parallel)'
+        ).format(message))
+        super().__init__(_message)

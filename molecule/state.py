@@ -42,11 +42,18 @@ class InvalidState(Exception):
 
 class State(object):
     """
-    A class which manages the state file.  Intended to be used as a singleton
-    throughout a given Molecule config.  The initial state is serialized to
-    disk if the file does not exist, otherwise is deserialized from the
-    existing state file.  Changes made to the object are immediately
-    serialized.
+    A class which manages the execution state. Intended to be used as a
+    singleton throughout a given Molecule config.
+
+    The initial state is serialized to disk if the file does not exist,
+    otherwise is deserialized from the existing state file. Changes made to the
+    object are immediately serialized.
+
+    If `--parallel` is passed on the command-line then the state will be stored
+    in memory and nothing will be serialized to disk. The State_ object still
+    offers the same API in this case but we raise a MemCacheException_ when the
+    programmer uses an incompatible API (like _write_file) and does not handle
+    the memcache case.
 
     State is not a top level option in Molecule's config.  It's purpose is for
     bookkeeping, and each :class:`.Config` object has a reference to a State_
@@ -66,20 +73,33 @@ class State(object):
         :returns: None
         """
         self._config = config
-        self._state_file = self._get_state_file()
+
+        if not self.is_memcached:
+            self._state_file = self._get_state_file()
+            self._write_state_file()
+        else:
+            self._state_file = None
+
         self._data = self._get_data()
-        self._write_state_file()
 
     def marshal(func):
         def wrapper(self, *args, **kwargs):
             func(self, *args, **kwargs)
-            self._write_state_file()
+
+            if not self.is_memcached:
+                self._write_state_file()
 
         return wrapper
 
     @property
+    def is_memcached(self):
+        return self._config.is_memcached
+
+    @property
     def state_file(self):
-        return self._state_file
+        if not self.is_memcached:
+            return self._state_file
+        return None
 
     @property
     def converged(self):
@@ -122,9 +142,11 @@ class State(object):
         self._data[key] = value
 
     def _get_data(self):
-        if os.path.isfile(self.state_file):
+        if not self.is_memcached and os.path.isfile(self.state_file):
             return self._load_file()
-        return self._default_data()
+
+        defaults = self._default_data()
+        return defaults if not hasattr(self, '_data') else self._data
 
     def _default_data(self):
         return {
@@ -136,9 +158,15 @@ class State(object):
         }
 
     def _load_file(self):
+        if self.is_memcached:
+            raise util.MemCacheException('molecule.state.State._load_file')
+
         return util.safe_load_file(self.state_file)
 
     def _write_state_file(self):
+        if self.is_memcached:
+            raise util.MemCacheException('molecule.state.State._write_state_file')
+
         util.write_file(self.state_file, util.safe_dump(self._data))
 
     def _get_state_file(self):
