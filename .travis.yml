@@ -37,8 +37,13 @@ language: python
   - &lint
     <<: *py-37
     <<: *reset-prerequisites
+  - &hetzner-cloud-cleanup
+    after_script:
+      - ./contrib/tokenmgmr.py remove --driver hetznercloud
   - &env-functional
     TESTS_TYPE: functional
+  - &env-hetzner-cloud
+    HCLOUD_TOKEN: "$(./contrib/tokenmgmr.py get --driver hetznercloud)"
   - &env-functional-shard_1
     <<: *env-functional
     PYTEST_ADDOPTS: >-
@@ -197,26 +202,33 @@ jobs:
     - <<: *py-37
       env:
         <<: *env-functional-shard_1
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 1/4, Ansible 2.8, Python 3.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-37
       env:
         <<: *env-functional-shard_2
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 2/4, Ansible 2.8, Python 3.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-37
       env:
         <<: *env-functional-shard_3
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 3/4, Ansible 2.8, Python 3.7
 
     - <<: *py-37
       env:
         <<: *env-functional-shard_4
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 4/4, Ansible 2.8, Python 3.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-37
       env:
@@ -270,20 +282,25 @@ jobs:
       <<: *if-cron-or-manual-run-or-tagged
       env:
         <<: *env-functional-shard_1
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 1/4, Ansible 2.8, Python 3.6
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-36
       <<: *if-cron-or-manual-run-or-tagged
       env:
         <<: *env-functional-shard_2
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 2/4, Ansible 2.8, Python 3.6
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-36
       <<: *if-cron-or-manual-run-or-tagged
       env:
         <<: *env-functional-shard_3
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 3/4, Ansible 2.8, Python 3.6
 
@@ -291,8 +308,10 @@ jobs:
       <<: *if-cron-or-manual-run-or-tagged
       env:
         <<: *env-functional-shard_4
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 4/4, Ansible 2.8, Python 3.6
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-36
       <<: *if-cron-or-manual-run-or-tagged
@@ -353,26 +372,34 @@ jobs:
     - <<: *py-27
       env:
         <<: *env-functional-shard_1
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 1/4, Ansible 2.8, Python 2.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-27
       env:
         <<: *env-functional-shard_2
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 2/4, Ansible 2.8, Python 2.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-27
       env:
         <<: *env-functional-shard_3
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 3/4, Ansible 2.8, Python 2.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-27
       env:
         <<: *env-functional-shard_4
+        <<: *env-hetzner-cloud
         ANSIBLE_VERSION: "28"
       name: functional tests shard 4/4, Ansible 2.8, Python 2.7
+      <<: *hetzner-cloud-cleanup
 
     - <<: *py-27
       env:
