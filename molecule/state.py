@@ -30,6 +30,8 @@ VALID_KEYS = [
     'driver',
     'prepared',
     'sanity_checked',
+    'run_uuid',
+    'is_parallel',
 ]
 
 
@@ -37,6 +39,7 @@ class InvalidState(Exception):
     """
     Exception class raised when an error occurs in :class:`.State`.
     """
+
     pass
 
 
@@ -101,6 +104,14 @@ class State(object):
     def sanity_checked(self):
         return self._data.get('sanity_checked')
 
+    @property
+    def run_uuid(self):
+        return self._data.get('run_uuid')
+
+    @property
+    def is_parallel(self):
+        return self._data.get('is_parallel')
+
     @marshal
     def reset(self):
         self._data = self._default_data()
@@ -133,6 +144,8 @@ class State(object):
             'driver': None,
             'prepared': None,
             'sanity_checked': False,
+            'run_uuid': self._config._run_uuid,
+            'is_parallel': self._config.is_parallel,
         }
 
     def _load_file(self):
@@ -142,5 +155,4 @@ class State(object):
         util.write_file(self.state_file, util.safe_dump(self._data))
 
     def _get_state_file(self):
-        return os.path.join(self._config.scenario.ephemeral_directory,
-                            'state.yml')
+        return os.path.join(self._config.scenario.ephemeral_directory, 'state.yml')

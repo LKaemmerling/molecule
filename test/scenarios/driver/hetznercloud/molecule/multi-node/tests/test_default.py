@@ -1,15 +1,20 @@
 import os
+import re
 
+import pytest
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+    os.environ['MOLECULE_INVENTORY_FILE']
+).get_hosts('all')
 
 
+@pytest.mark.skip(reason='Scenario tests not implemented yet')
 def test_hostname(host):
-    assert 'delegated-instance-vagrant' == host.check_output('hostname -s')
+    assert re.search(r'instance-[12].*', host.check_output('hostname -s'))
 
 
+@pytest.mark.skip(reason='Scenario tests not implemented yet')
 def test_etc_molecule_directory(host):
     f = host.file('/etc/molecule')
 
@@ -19,8 +24,10 @@ def test_etc_molecule_directory(host):
     assert f.mode == 0o755
 
 
+@pytest.mark.skip(reason='Scenario tests not implemented yet')
 def test_etc_molecule_ansible_hostname_file(host):
-    f = host.file('/etc/molecule/delegated-instance-vagrant')
+    filename = '/etc/molecule/{}'.format(host.check_output('hostname -s'))
+    f = host.file(filename)
 
     assert f.is_file
     assert f.user == 'root'

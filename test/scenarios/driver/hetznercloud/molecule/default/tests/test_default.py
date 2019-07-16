@@ -1,15 +1,21 @@
+import re
 import os
+
+import pytest
 
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+    os.environ['MOLECULE_INVENTORY_FILE']
+).get_hosts('all')
 
 
+@pytest.mark.skip(reason='Scenario tests not implemented yet')
 def test_hostname(host):
-    assert 'delegated-instance-openstack' == host.check_output('hostname -s')
+    assert re.search(r'instance.*', host.check_output('hostname -s'))
 
 
+@pytest.mark.skip(reason='Scenario tests not implemented yet')
 def test_etc_molecule_directory(host):
     f = host.file('/etc/molecule')
 
@@ -19,8 +25,9 @@ def test_etc_molecule_directory(host):
     assert f.mode == 0o755
 
 
+@pytest.mark.skip(reason='Scenario tests not implemented yet')
 def test_etc_molecule_ansible_hostname_file(host):
-    f = host.file('/etc/molecule/delegated-instance-openstack')
+    f = host.file('/etc/molecule/{}'.format(host.check_output('hostname -s')))
 
     assert f.is_file
     assert f.user == 'root'

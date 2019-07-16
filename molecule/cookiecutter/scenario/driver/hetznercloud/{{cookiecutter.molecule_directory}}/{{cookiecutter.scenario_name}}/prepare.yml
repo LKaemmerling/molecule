@@ -1,4 +1,5 @@
 ---
+{% raw -%}
 - name: Prepare
   hosts: all
   gather_facts: false
@@ -7,3 +8,4 @@
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal python-zipstream)
       become: true
       changed_when: false
+{%- endraw %}

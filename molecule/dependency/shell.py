@@ -99,7 +99,8 @@ class Shell(base.Base):
         self._sh_command = getattr(sh, command)
         # Reconstruct command with remaining args.
         self._sh_command = self._sh_command.bake(
-            args, _env=self.env, _out=LOG.out, _err=LOG.error)
+            args, _env=self.env, _out=LOG.out, _err=LOG.error
+        )
 
     def execute(self):
         if not self.enabled:
@@ -110,12 +111,7 @@ class Shell(base.Base):
         if self._sh_command is None:
             self.bake()
 
-        try:
-            util.run_command(self._sh_command, debug=self._config.debug)
-            msg = 'Dependency completed successfully.'
-            LOG.success(msg)
-        except sh.ErrorReturnCode as e:
-            util.sysexit(e.exit_code)
+        self.execute_with_retries()
 
     def _has_command_configured(self):
         return 'command' in self._config.config['dependency']

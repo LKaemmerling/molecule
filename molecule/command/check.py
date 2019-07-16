@@ -18,12 +18,15 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
+import os
 import click
 
 from molecule import logger
 from molecule.command import base
+from molecule import util
 
 LOG = logger.get_logger(__name__)
+MOLECULE_PARALLEL = os.environ.get('MOLECULE_PARALLEL', False)
 
 
 class Check(base.Base):
@@ -58,6 +61,12 @@ class Check(base.Base):
 
         Load an env file to read variables from when rendering
         molecule.yml.
+
+    .. program:: molecule --parallel check
+
+    .. option:: molecule --parallel check
+
+       Run in parallelizable mode.
     """
 
     def execute(self):
@@ -78,16 +87,24 @@ class Check(base.Base):
     '-s',
     default=base.MOLECULE_DEFAULT_SCENARIO_NAME,
     help='Name of the scenario to target. ({})'.format(
-        base.MOLECULE_DEFAULT_SCENARIO_NAME))
-def check(ctx, scenario_name):  # pragma: no cover
+        base.MOLECULE_DEFAULT_SCENARIO_NAME
+    ),
+)
+@click.option(
+    '--parallel/--no-parallel',
+    default=MOLECULE_PARALLEL,
+    help='Enable or disable parallel mode. Default is disabled.',
+)
+def check(ctx, scenario_name, parallel):  # pragma: no cover
     """
     Use the provisioner to perform a Dry-Run (destroy, dependency, create,
     prepare, converge).
     """
     args = ctx.obj.get('args')
     subcommand = base._get_subcommand(__name__)
-    command_args = {
-        'subcommand': subcommand,
-    }
+    command_args = {'parallel': parallel, 'subcommand': subcommand}
+
+    if parallel:
+        util.validate_parallel_cmd_args(command_args)
 
     base.execute_cmdline_scenarios(scenario_name, args, command_args)

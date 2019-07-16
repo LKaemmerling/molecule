@@ -18,8 +18,10 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
+import shutil
 import os
 import fnmatch
+
 try:
     from pathlib import Path
 except ImportError:
@@ -98,6 +100,15 @@ class Scenario(object):
         self.config = config
         self._setup()
 
+    def _remove_scenario_state_directory(self):
+        """Remove scenario cached disk stored state.
+
+        :return: None
+        """
+        directory = str(Path(self.ephemeral_directory).parent)
+        LOG.info('Removing {}'.format(directory))
+        shutil.rmtree(directory)
+
     def prune(self):
         """
         Prune the scenario ephemeral directory files and returns None.
@@ -121,8 +132,7 @@ class Scenario(object):
                 os.remove(f)
 
         # Remove empty directories.
-        for dirpath, dirs, files in os.walk(
-                self.ephemeral_directory, topdown=False):
+        for dirpath, dirs, files in os.walk(self.ephemeral_directory, topdown=False):
             if not dirs and not files:
                 os.removedirs(dirpath)
 
@@ -137,9 +147,14 @@ class Scenario(object):
     @property
     def ephemeral_directory(self):
         project_directory = os.path.basename(self.config.project_directory)
-        scenario_name = self.name
+
+        if self.config.is_parallel:
+            project_directory = '{}-{}'.format(project_directory, self.config._run_uuid)
+
         project_scenario_directory = os.path.join(
-            'molecule', project_directory, scenario_name)
+            self.config.cache_directory, project_directory, self.name
+        )
+
         path = ephemeral_directory(project_scenario_directory)
 
         return ephemeral_directory(path)
