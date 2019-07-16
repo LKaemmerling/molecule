@@ -11,14 +11,14 @@ lint:
     config-file: ../../../resources/.yamllint
 
 platforms:
-  - name: "instance-1-{{ 12345 | random | to_uuid }}"
+  - name: "instance-1-${TRAVIS_BUILD_ID:-local}"
     server_type: cx11
     image: debian-9
     groups:
       - foo
       - bar
 
-  - name: "instance-2-{{ 12345 | random | to_uuid }}"
+  - name: "instance-2-${TRAVIS_BUILD_ID:-local}"
     server_type: cx11
     image: debian-9
     groups:
@@ -37,7 +37,6 @@ provisioner:
   config_options:
     defaults:
       timeout: 100
-      transport: paramiko
     ssh_connection:
       scp_if_ssh: true
 

@@ -130,7 +130,6 @@ class HetznerCloud(base.Base):
                 'ansible_user': d['user'],
                 'ansible_host': d['address'],
                 'ansible_port': d['port'],
-                'ansible_ssh_pass': d['ssh_pass'],
                 'ansible_private_key_file': d['identity_file'],
                 'connection': 'ssh',
                 'ansible_ssh_common_args': ' '.join(self.ssh_connection_options),

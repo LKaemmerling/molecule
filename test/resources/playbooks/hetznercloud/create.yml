@@ -8,14 +8,12 @@
     ssh_port: 22
     ssh_user: root
     ssh_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"
-    ssh_pass: "{{ lookup('password', lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') + '/ssh_pass', chars=ascii_letters) }}"
     ssh_key_name: molecule-generated-ssh-key
   tasks:
     - name: Create SSH key
       user:
         name: "{{ lookup('env', 'USER') }}"
         ssh_key_file: "{{ ssh_path }}"
-        ssh_key_passphrase: "{{ ssh_pass }}"
         generate_ssh_key: true
         force: true
       register: generated_ssh_key
@@ -32,7 +30,7 @@
 
     - name: Create molecule instance(s)
       hcloud_server:
-        name: "{{ item.name }}"
+        name: "{{item.name}}"
         server_type: "{{ item.server_type }}"
         ssh_keys:
           - "{{ ssh_key_name }}"
@@ -63,7 +61,6 @@
         instance_conf_dict: {
           'instance': "{{ item.hcloud_server.name }}",
           'ssh_key_name': "{{ ssh_key_name }}",
-          'ssh_pass': "{{ ssh_pass }}",
           'address': "{{ item.hcloud_server.ipv4_address }}",
           'user': "{{ ssh_user }}",
           'port': "{{ ssh_port }}",
