@@ -11,7 +11,7 @@ lint:
     config-file: ../../../resources/.yamllint
 
 platforms:
-  - name: instance
+  - name: "instance-{{ 12345 | random | to_uuid }}"
     server_type: cx11
     image: debian-9
 

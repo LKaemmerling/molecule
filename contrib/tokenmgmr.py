@@ -84,6 +84,7 @@ def _get_hetzner_cloud_token():
     try:
         payload = subprocess.check_output(cmd).strip()
         loaded = json.loads(payload)
+        assert len(loaded['token']) == 64
         return loaded['token']
     except subprocess.CalledProcessError as exception:
         sys.exit(
@@ -97,6 +98,8 @@ def _get_hetzner_cloud_token():
         sys.exit('Expecting "token" key in response payload')
     except (TypeError, json.decoded.JSONDecodeError) as exception:
         sys.exit('Unable to load JSON. Saw: {}'.format(str(exception)))
+    except AssertionError as exception:
+        sys.exit(str(exception))
 
 
 def _remove_hetzner_cloud_token():

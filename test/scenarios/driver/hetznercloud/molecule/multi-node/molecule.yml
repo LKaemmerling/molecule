@@ -11,14 +11,14 @@ lint:
     config-file: ../../../resources/.yamllint
 
 platforms:
-  - name: instance-1
+  - name: "instance-1-{{ 12345 | random | to_uuid }}"
     server_type: cx11
     image: debian-9
     groups:
       - foo
       - bar
 
-  - name: instance-2
+  - name: "instance-2-{{ 12345 | random | to_uuid }}"
     server_type: cx11
     image: debian-9
     groups:
